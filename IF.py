@@ -12,6 +12,8 @@ def separate(X,y):
     data.columns=[0,1,2,3]
     normal=data.loc[data[3]==0]
     abnormal=data.loc[data[3]==1]
+    normal.drop([3],axis=1,inplace=True)
+    abnormal.drop([3],axis=1,inplace=True)
     return normal,abnormal
 
 def prepare_sets(X,y):
@@ -50,7 +52,7 @@ def roc_plot(model,X,y):
     preds=-model.decision_function(X)
     fpr, tpr, threshold = roc_curve(y, preds)
     roc_auc = auc(fpr, tpr)
-    
+
     plt.title('Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
     plt.legend(loc = 'lower right')
@@ -60,35 +62,32 @@ def roc_plot(model,X,y):
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.show()
-    
+
 if __name__=='__main__':
     file='http.mat'
     mat = hdf5storage.loadmat(file)
     X=pd.DataFrame(mat['X'])
     y=pd.DataFrame(mat['y'])
-    
+
     normal,abnormal=separate(X,y)
     X_train,y_train,X_dev,y_dev,X_test,y_test=prepare_sets(X,y)
-    
-    
+
+
     ifor=model(X_train)
-    
+
     scores_n=ifor.decision_function(normal)
     scores_ab=ifor.decision_function(abnormal)
-    
+
     for i in range(1500):
         plt.scatter(scores_n[i],0,color='blue',marker='*')
     for i in range(1500):
         plt.scatter(scores_ab[i],1,color='red',marker='*')
-    
+
     print('TRAIN')
     model_evaluate(ifor,X_train,y_train)
-    
+
     print('DEV')
     model_evaluate(ifor,X_dev,y_dev)
-    
+
     print('TEST')
     model_evaluate(ifor,X_test,y_test)
-    
-
-    
